@@ -94,7 +94,7 @@ function spawnCrawler(organizationId, websiteUrl) {
     ...process.env,
     DATABASE_URL: process.env.DATABASE_URL || '',
   };
-  const child = spawn(binPath, ['--org-id', organizationId, websiteUrl], {
+  const child = spawn(binPath, ['--org-id=' + organizationId, websiteUrl], {
     detached: true,
     stdio: ['ignore', 'pipe', 'pipe'],
     env,
@@ -216,6 +216,6 @@ const server = http.createServer((req, res) => {
   send(res, 404, { error: 'Not Found' });
 });
 
-server.listen(PORT, () => {
+server.listen(Number(PORT), '0.0.0.0', () => {
   log('info', 'Crawler runner listening', { port: PORT });
 });

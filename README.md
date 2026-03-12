@@ -71,6 +71,8 @@ Then check the database: table `page` should have new rows for that `organizatio
 
 ## Deployment (Railway / Render / Fly)
 
+**Railway:** The repo includes a `Dockerfile` that installs Node, dependencies, and Playwright Chromium. Railway will detect it and build from the Dockerfile. Set the service **start command** to `node index.js` (or leave it unset; the Dockerfile `CMD` runs it). Set `DATABASE_URL` and `CRAWLER_SERVICE_SECRET` in the Railway service variables.
+
 - Set `DATABASE_URL` and `CRAWLER_SERVICE_SECRET`.
 - Expose the HTTP port (platforms usually set `PORT`).
 - Ensure the crawler binary is present at runtime and built for Linux (e.g. run `./scripts/build-crawler-linux.sh` or `npm run build:crawler` and commit `bin/crawler`, or build in your Dockerfile).
