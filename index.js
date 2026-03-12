@@ -96,9 +96,13 @@ function spawnCrawler(organizationId, websiteUrl) {
   };
   const child = spawn(binPath, ['--org-id', organizationId, websiteUrl], {
     detached: true,
-    stdio: 'ignore',
+    stdio: ['ignore', 'pipe', 'pipe'],
     env,
   });
+  const stdoutChunks = [];
+  const stderrChunks = [];
+  child.stdout.on('data', (chunk) => stdoutChunks.push(chunk));
+  child.stderr.on('data', (chunk) => stderrChunks.push(chunk));
   child.unref();
   child.on('error', (err) => {
     log('error', 'Crawler spawn error', { organizationId, error: err.message });
@@ -109,10 +113,14 @@ function spawnCrawler(organizationId, websiteUrl) {
         log('error', 'Post-crawl scan failed', { organizationId, error: err.message });
       });
     } else {
+      const crawlerStdout = Buffer.concat(stdoutChunks).toString('utf8').trim() || null;
+      const crawlerStderr = Buffer.concat(stderrChunks).toString('utf8').trim() || null;
       log('error', 'Crawler exited with non-zero status', {
         organizationId,
         code,
         signal,
+        crawlerStdout: crawlerStdout || undefined,
+        crawlerStderr: crawlerStderr || undefined,
       });
     }
   });
