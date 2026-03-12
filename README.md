@@ -11,19 +11,22 @@ HTTP service that receives crawl requests from the DAPEN main app and spawns the
 
 ## Obtaining the crawler binary
 
-The crawler lives in the main DAPEN repo under `crawler/`. Use one of these approaches:
+The crawler lives in the main DAPEN repo under `crawler/`. **For Railway (Linux)** you must use a binary built for `linux/amd64` (or `linux/arm64` if your service uses ARM). A binary built on macOS will not run on Railway.
 
-**Option A – Copy from main repo (recommended):**
+**Option A – Copy pre-built binary from main repo (local/dev only):**
 
 1. In the main DAPEN repo: `cd crawler && go build -o crawler .`
 2. Copy the produced `crawler` binary into this project as `bin/crawler`.
-3. Make it executable: `chmod +x bin/crawler`.
+3. Make it executable: `chmod +x bin/crawler`.  
+   Note: this builds for your current OS; use Option B for Railway.
 
-**Option B – Vendor and build in this repo:**
+**Option B – Vendor source and build for Linux (recommended for Railway):**
 
-1. Copy the entire `crawler/` directory from the main repo (Go source + go.mod/go.sum).
-2. Add a build step: `go build -o bin/crawler ./crawler`.
-3. Run this build in CI or your Dockerfile before starting the Node server.
+1. Copy the entire `crawler/` directory from the main DAPEN repo (all `.go` files, `go.mod`, `go.sum`) into this project’s root so you have `crawler/` here.
+2. Build a Linux binary:
+   - **Script:** `./scripts/build-crawler-linux.sh` (builds `linux/amd64`; set `CRAWLER_ARCH=arm64` for ARM).
+   - **Or npm:** `npm run build:crawler` (requires Go installed).
+3. Commit `bin/crawler` and deploy; Railway will use this binary. Alternatively, run the same build in your CI or Dockerfile before starting the Node server.
 
 ## API
 
@@ -70,7 +73,7 @@ Then check the database: table `page` should have new rows for that `organizatio
 
 - Set `DATABASE_URL` and `CRAWLER_SERVICE_SECRET`.
 - Expose the HTTP port (platforms usually set `PORT`).
-- Ensure the crawler binary is present at runtime (e.g. in repo at `bin/crawler` or built in Dockerfile).
+- Ensure the crawler binary is present at runtime and built for Linux (e.g. run `./scripts/build-crawler-linux.sh` or `npm run build:crawler` and commit `bin/crawler`, or build in your Dockerfile).
 - Run `npx playwright install chromium` in the deployment environment (e.g. in the Docker image or build step) so post-crawl scanning works.
 - For screenshots: set `S3_ENDPOINT`, `S3_REGION`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, and `IMAGES_BUCKET_NAME` to match the main app’s images bucket. If unset, scans still run but `screenshot_key` is left null.
 - Point the main app’s `CRAWLER_SERVICE_URL` at this service (e.g. `https://your-runner.railway.app`) and set `CRAWLER_SERVICE_SECRET` to the same value. Do not set `CRAWLER_BIN` on Vercel.

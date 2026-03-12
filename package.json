@@ -7,7 +7,8 @@
     "node": ">=18"
   },
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "build:crawler": "GOOS=linux GOARCH=${CRAWLER_ARCH:-amd64} go build -o bin/crawler ./crawler"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1007.0",
